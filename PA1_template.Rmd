@@ -87,3 +87,125 @@ MaxOf<-names(which.max(meanInterval))
    The `r MaxOf` interval contain the maximum number of steps average across all the days.
 
 
+### Imputing missing values
+
+Note that there are a number of days/intervals where there are missing
+values (coded as `NA`). The presence of missing days may introduce
+bias into some calculations or summaries of the data.
+
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
+
+
+```{r}
+n.na<-colSums(is.na(data))
+```
+ The number of NAs is `r n.na`.  
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+I choose to use mean of interval for all days. If number of steps in NA in given row I look the interval, search for mean for that interval and replace the NA to mean. 
+
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+   The new dataset I call "data.noNA"
+ ```{r}
+data.noNA<-data         
+for(i in 1:dim(data)[1]){  
+    # Check for NA  
+    if(is.na(data.noNA[i,1])){  
+        # look the mean and replace  
+        meanA<-meanInterval[as.character(data.noNA[i,3])]          
+        data.noNA[i,1]<-meanA  
+    }
+}
+```
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+First, histogram
+```{r histogram of steps takem per day with no NA,fig.width=14}
+  
+#Sum of steps taken per day   
+#sumSteps<-tapply(data$steps,data$date,FUN = sum,na.rm=T,simplify = T)
+#print(sumSteps)
+
+
+# convert data for histogram
+dd.NA<-c()
+for(i in 1:dim(data.noNA)[1]){
+    if(!is.na(data.noNA[i,1]))
+    dd.NA<-c(dd.NA,(rep(data.noNA[i,2],data.noNA[i,1])))
+
+}
+#dd<-as.Date(dd,origin="2012-10-02")
+dd.NA<-as.Date(dd.NA, format = "%Y-%m-%d",origin="2012-10-02")
+h<-hist(dd.NA,breaks=60,freq=T,xlab="date")
+```
+Calculate mean and median for no NA data
+
+```{r}	  
+
+meanSteps.noNA<-tapply(data.noNA$steps,data.noNA$date,FUN = mean,na.rm=T)
+medianSteps.noNA<-tapply(data.noNA$steps,data.noNA$date,FUN = median,na.rm=F)
+ 
+resume.noNA<-data.frame(unique(data.noNA$date),meanSteps.noNA,medianSteps.noNA)
+rownames(resume.noNA)<-1:dim(resume.noNA)[1]
+colnames(resume.noNA)<-c("   date   ","   mean   ","    median   ")
+
+```
+
+```{r table4, results="asis",fig.width=8}
+stargazer(resume.noNA,type="html",summary=FALSE,
+          title="Sum, mean and median total number of steps taken per day, imputing NA",
+          rownames=FALSE)
+```
+
+```{r, Histogram of impact of imputation in data}
+df.All<-data.frame(date=dd,type=rep("raw",length(dd)))
+df.All <- rbind(df.All,data.frame(date=dd.NA,type=rep("noNA",length(dd.NA))))
+require(ggplot2)
+ggplot(df.All, aes(x=date,fill=type))+geom_histogram()
+
+```
+
+
+As can see in previous figure the imputation increases the number of steps for all days.
+
+
+### Are there differences in activity patterns between weekdays and weekends?
+
+
+
+1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+```{r}
+data.noNA<-cbind(data.noNA,weekdays=weekdays(as.Date(data.noNA$date)))
+
+data.noNA<- cbind(data.noNA,week= ifelse(data.noNA$weekdays=="Sunday"|data.noNA$weekdays=="Saturday","Weekend","Weekday") )
+```
+   
+
+1. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using **simulated data**:
+
+```{r}
+
+
+#split data
+weekdays<-data.noNA[data.noNA$week=="Weekday",]
+weekends<-data.noNA[data.noNA$week=="Weekend",]
+
+
+meanInterval.weekdays<-tapply(weekdays$steps,weekdays$interval,FUN = mean,na.rm=T)
+
+meanInterval.weekends<-tapply(weekends$steps,weekends$interval,FUN = mean,na.rm=T)
+
+# Union data
+par(mfrow = c(2,1))   
+plot(unique(data$interval),meanInterval.weekdays,type="l",
+     main="Weekdays",
+     xlab="Intervals",
+     ylab="Average number of steps")
+plot(unique(data$interval),meanInterval.weekends,type="l",
+     main="Weekends",
+     xlab="Intervals",
+     ylab="Average number of steps")
+
+```
