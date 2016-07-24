@@ -138,7 +138,9 @@ for(i in 1:dim(data.noNA)[1]){
 }
 #dd<-as.Date(dd,origin="2012-10-02")
 dd.NA<-as.Date(dd.NA, format = "%Y-%m-%d",origin="2012-10-02")
-h<-hist(dd.NA,breaks=60,freq=T,xlab="date")
+png("figure/histogram.png")
+hist(dd.NA,breaks=60,freq=T,xlab="date")
+dev.off()
 ```
 Calculate mean and median for no NA data
 
@@ -162,8 +164,10 @@ stargazer(resume.noNA,type="html",summary=FALSE,
 ```{r, Histogram of impact of imputation in data}
 df.All<-data.frame(date=dd,type=rep("raw",length(dd)))
 df.All <- rbind(df.All,data.frame(date=dd.NA,type=rep("noNA",length(dd.NA))))
+png("figure/comparation.png")
 require(ggplot2)
 ggplot(df.All, aes(x=date,fill=type))+geom_histogram()
+dev.off()
 
 ```
 
@@ -198,6 +202,7 @@ meanInterval.weekdays<-tapply(weekdays$steps,weekdays$interval,FUN = mean,na.rm=
 meanInterval.weekends<-tapply(weekends$steps,weekends$interval,FUN = mean,na.rm=T)
 
 # Union data
+png("figure/panel.png")
 par(mfrow = c(2,1))   
 plot(unique(data$interval),meanInterval.weekdays,type="l",
      main="Weekdays",
@@ -207,5 +212,6 @@ plot(unique(data$interval),meanInterval.weekends,type="l",
      main="Weekends",
      xlab="Intervals",
      ylab="Average number of steps")
+dev.off()
 
 ```
