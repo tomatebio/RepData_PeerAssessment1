@@ -8,18 +8,82 @@ output:
 
 ## Loading and preprocessing the data
 
+ First load the data from zipped file.
+```{r ad}
+ data <- read.csv(unzip("activity.zip"))  
+```
 
+Checking the data with summary 	
+```{r table,results="asis"}
+require(stargazer)
+require(xtable)
+stargazer(data,type="html")
+``` 
 
 ## What is mean total number of steps taken per day?
 
 
+### Calculate the total number of steps taken per day
+```{r histogram of steps takem per day,fig.width=14}
+  
+#Sum of steps taken per day   
+sumSteps<-tapply(data$steps,data$date,FUN = sum,na.rm=T,simplify = T)
+print(sumSteps)
 
+
+# convert data for histogram
+dd<-c()
+for(i in 1:dim(data)[1]){
+    if(!is.na(data[i,1]))
+    dd<-c(dd,(rep(data[i,2],data[i,1])))
+
+}
+#dd<-as.Date(dd,origin="2012-10-02")
+dd<-as.Date(dd, format = "%Y-%m-%d",origin="2012-10-02")
+hist(dd,breaks=60,freq=T,xlab="date")
+```
+
+   
+
+ Calculate and report the mean and median of the total number of steps taken per day. 
+```{r}
+# Calculate the mean and median total number of steps taken per day
+sumSteps<-tapply(data$steps,data$date,FUN = sum,na.rm=T)
+meanSteps<-tapply(data$steps,data$date,FUN = mean,na.rm=T)
+medianSteps<-tapply(data$steps,data$date,FUN = median,na.rm=F)
+ 
+resume<-data.frame(unique(data$date),sumSteps,meanSteps,medianSteps)
+rownames(resume)<-1:dim(resume)[1]
+colnames(resume)<-c("   date   ","   Sum   ","   mean   ","    median   ")
+
+```
+
+```{r table2, results="asis",fig.width=8}
+stargazer(resume,type="html",summary=FALSE,
+          title="Sum, mean and median total number of steps taken per day",
+          rownames=FALSE)
+```
+	
+	
+	
+	
 ## What is the average daily activity pattern?
+   In order to answer this question. First I calculate the average number of steps taken, average per day. Second I plot the results.
+
+1. Plot time series 
+```{r}
+meanInterval<-tapply(data$steps,data$interval,FUN = mean,na.rm=T)                                                                    
+   
+plot(unique(data$interval),meanInterval,type="l",
+     main="Average number of steps average across all days",
+     xlab="Intervals",
+     ylab="Average number of steps")
+```
+  
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r}
+MaxOf<-names(which.max(meanInterval))
+```
+   The `r MaxOf` interval contain the maximum number of steps average across all the days.
 
 
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
