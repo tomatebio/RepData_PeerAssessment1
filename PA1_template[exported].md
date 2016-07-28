@@ -3,9 +3,10 @@
 
 ## Loading and preprocessing the data
 
- First load the data from zipped file.
+ First load the data from zipped file in folder. 
 
 ```r
+ # Reading data from the same folder
  data <- read.csv(unzip("activity.zip"))  
 ```
 
@@ -96,11 +97,14 @@ for(i in 1:dim(data)[1]){
 }
 #dd<-as.Date(dd,origin="2012-10-02")
 dd<-as.Date(dd, format = "%Y-%m-%d",origin="2012-10-02")
+```
+
+
+```r
 hist(dd,breaks=60,freq=T,xlab="date")
 ```
 
-![](PA1_template[exported]_files/figure-html/histogram of steps takem per day-1.png)<!-- -->
-
+![](PA1_template[exported]_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
    
 
  Calculate and report the mean and median of the total number of steps taken per day. 
@@ -188,8 +192,16 @@ stargazer(resume,type="html",summary=FALSE,
 <tr><td style="text-align:left">2012-11-29</td><td>7,047</td><td>24.469</td><td>0</td></tr>
 <tr><td style="text-align:left">2012-11-30</td><td>0</td><td></td><td></td></tr>
 <tr><td colspan="4" style="border-bottom: 1px solid black"></td></tr></table>
-	
-	
+
+Summaries across all days
+
+
+```r
+sumALL<-sum(sumSteps)
+meanALL<-mean(sumSteps)
+medianAll<-median(sumSteps)
+```
+The sum of steps day is 'r sumALL'. The average of steps per day across all days is 'r meanAll' and the median The average of steps per day across all days is 'r medianALL'.	
 	
 	
 ## What is the average daily activity pattern?
@@ -199,14 +211,18 @@ stargazer(resume,type="html",summary=FALSE,
 
 ```r
 meanInterval<-tapply(data$steps,data$interval,FUN = mean,na.rm=T)                                                                    
-   
+#png("figure/timeseries.png")   
 plot(unique(data$interval),meanInterval,type="l",
      main="Average number of steps average across all days",
      xlab="Intervals",
      ylab="Average number of steps")
 ```
 
-![](PA1_template[exported]_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![](PA1_template[exported]_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
+#dev.off()
+```
   
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -269,10 +285,15 @@ for(i in 1:dim(data.noNA)[1]){
 }
 #dd<-as.Date(dd,origin="2012-10-02")
 dd.NA<-as.Date(dd.NA, format = "%Y-%m-%d",origin="2012-10-02")
-h<-hist(dd.NA,breaks=60,freq=T,xlab="date")
+#png("figure/histogram.png")
+hist(dd.NA,breaks=60,freq=T,xlab="date")
 ```
 
 ![](PA1_template[exported]_files/figure-html/histogram of steps takem per day with no NA-1.png)<!-- -->
+
+```r
+#dev.off()
+```
 Calculate mean and median for no NA data
 
 
@@ -362,6 +383,7 @@ stargazer(resume.noNA,type="html",summary=FALSE,
 ```r
 df.All<-data.frame(date=dd,type=rep("raw",length(dd)))
 df.All <- rbind(df.All,data.frame(date=dd.NA,type=rep("noNA",length(dd.NA))))
+#png("figure/comparation.png")
 require(ggplot2)
 ```
 
@@ -378,6 +400,10 @@ ggplot(df.All, aes(x=date,fill=type))+geom_histogram()
 ```
 
 ![](PA1_template[exported]_files/figure-html/Histogram of impact of imputation in data-1.png)<!-- -->
+
+```r
+#dev.off()
+```
 
 
 As can see in previous figure the imputation increases the number of steps for all days.
@@ -410,6 +436,7 @@ meanInterval.weekdays<-tapply(weekdays$steps,weekdays$interval,FUN = mean,na.rm=
 meanInterval.weekends<-tapply(weekends$steps,weekends$interval,FUN = mean,na.rm=T)
 
 # Union data
+#png("figure/panel.png")
 par(mfrow = c(2,1))   
 plot(unique(data$interval),meanInterval.weekdays,type="l",
      main="Weekdays",
@@ -421,4 +448,8 @@ plot(unique(data$interval),meanInterval.weekends,type="l",
      ylab="Average number of steps")
 ```
 
-![](PA1_template[exported]_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](PA1_template[exported]_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+```r
+#dev.off()
+```
