@@ -41,8 +41,9 @@ for(i in 1:dim(data)[1]){
 }
 #dd<-as.Date(dd,origin="2012-10-02")
 dd<-as.Date(dd, format = "%Y-%m-%d",origin="2012-10-02")
+```
 
-
+```{r}
 hist(dd,breaks=60,freq=T,xlab="date")
 
 ```
